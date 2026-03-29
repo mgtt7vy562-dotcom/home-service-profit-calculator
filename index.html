@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Service Profit Margin Calculator</title>
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Profit Calculator">
+    <meta name="theme-color" content="#0a0f1e">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 2rem 1rem;
+            font-family: 'Space Grotesk', -apple-system, sans-serif;
+            color: #fff;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .glow-card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            padding: 2rem;
+        }
+        .header { text-align: center; margin-bottom: 2rem; animation: slideIn 0.5s ease-out; }
+        .badge {
+            display: inline-flex; align-items: center; gap: 0.75rem;
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            padding: 0.5rem 1.5rem; border-radius: 9999px; margin-bottom: 1rem;
+            box-shadow: 0 4px 12px rgba(74,222,128,0.3);
+        }
+        .badge span { color: #000; font-weight: 700; font-size: 1.125rem; }
+        h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; line-height: 1.2; }
+        .subtitle { color: rgba(255,255,255,0.7); font-size: 1.125rem; }
+        .industry-tabs {
+            display: flex; gap: 0.75rem; margin-bottom: 2.5rem;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            flex: 1; min-width: 140px;
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+            padding: 0.85rem 1rem; border-radius: 12px;
+            border: none; background: transparent; color: rgba(255,255,255,0.55);
+            font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; font-weight: 600;
+            cursor: pointer; transition: all 0.25s ease;
+        }
+        .tab-btn:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.85); }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            color: #000; box-shadow: 0 4px 16px rgba(74,222,128,0.35);
+        }
+        .tab-btn .tab-icon { font-size: 1.25rem; }
+        .industry-panel { display: none; }
+        .industry-panel.active { display: block; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
+        @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) {
+            .industry-tabs { gap: 0.4rem; }
+            .tab-btn { font-size: 0.8rem; padding: 0.7rem 0.5rem; min-width: 90px; }
+            h1 { font-size: 1.75rem; }
+        }
+        .section-title {
+            font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .form-group { margin-bottom: 1rem; }
+        label {
+            color: rgba(255,255,255,0.9); display: block; margin-bottom: 0.5rem;
+            font-weight: 500; font-size: 0.9rem;
+        }
+        select, input {
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px; color: #fff; padding: 0.75rem; width: 100%;
+            font-family: 'Space Grotesk', sans-serif; font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        select:focus, input:focus {
+            outline: none; border-color: #4ade80;
+            box-shadow: 0 0 0 3px rgba(74,222,128,0.1);
+        }
+        option { background: #1a1a2e; color: #fff; }
+        small {
+            display: block; margin-top: 0.25rem; font-size: 0.75rem;
+            color: rgba(255,255,255,0.6);
+        }
+        .checkbox-container {
+            display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem;
+            background: rgba(255,255,255,0.05); border-radius: 8px;
+            cursor: pointer; transition: all 0.3s ease; margin-bottom: 0.5rem;
+        }
+        .checkbox-container:hover { background: rgba(255,255,255,0.08); }
+        input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; accent-color: #4ade80; }
+        .info-box { padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.875rem; }
+        .info-box.green { background: rgba(74,222,128,0.1); border-left: 3px solid #4ade80; color: rgba(255,255,255,0.9); }
+        .info-box.yellow { background: rgba(251,191,36,0.1); border-left: 3px solid #fbbf24; color: rgba(255,255,255,0.9); }
+        .icon { width: 24px; height: 24px; display: inline-block; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .progress-bar { width: 100%; height: 12px; background: rgba(255,255,255,0.1); border-radius: 9999px; overflow: hidden; }
+        .progress-fill { height: 100%; transition: width 0.5s ease; border-radius: 9999px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 0.75rem 0.5rem; text-align: left; }
+        th { color: rgba(255,255,255,0.9); font-weight: 600; border-bottom: 2px solid rgba(255,255,255,0.1); }
+        td { color: rgba(255,255,255,0.8); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        tr:last-child td { border-bottom: none; }
+        .price-table td:last-child { text-align: right; color: #4ade80; font-weight: 600; }
+        .footer { text-align: center; margin-top: 3rem; padding: 1.5rem; background: rgba(255,255,255,0.03); border-radius: 12px; }
+        .footer p { color: rgba(255,255,255,0.6); font-size: 0.875rem; }
+        .footer strong { color: #4ade80; }
+        .calc-btn {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            color: #000; font-weight: 700; font-size: 1.125rem;
+            padding: 1rem 2rem; border: none; border-radius: 12px; cursor: pointer;
+            box-shadow: 0 4px 20px rgba(74,222,128,0.4); transition: all 0.3s ease;
+            width: 100%; max-width: 400px;
+        }
+        .calc-btn:active { transform: scale(0.98); }
+        .clear-btn {
+            background: rgba(239,68,68,0.2); border: 1px solid #ef4444; color: #ef4444;
+            font-weight: 600; font-size: 1rem; padding: 0.75rem 2rem; border-radius: 12px;
+            cursor: pointer; transition: all 0.3s ease; width: 100%; max-width: 400px; margin-top: 1rem;
+        }
+        .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        @media (max-width: 700px) { .bottom-grid { grid-template-columns: 1fr; } }
+    </style>
+</head><body>
+<div class="container">
+
+    <div class="header">
+        <div class="badge">
+            <svg class="icon" fill="none" stroke="#000" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+            <span>Profit Margin Calculator</span>
+        </div>
+        <h1>Home Service Pricing Analyzer</h1>
+        <p class="subtitle">Quote any job across junk removal, lawn care &amp; pressure washing</p>
+    </div>
+
+    <div class="industry-tabs">
+        <button class="tab-btn active" onclick="switchIndustry('junk')" id="tab-junk">
+            <span class="tab-icon">🗑️</span> Junk Removal
+        </button>
+        <button class="tab-btn" onclick="switchIndustry('lawn')" id="tab-lawn">
+            <span class="tab-icon">🌿</span> Lawn Care
+        </button>
+        <button class="tab-btn" onclick="switchIndustry('pressure')" id="tab-pressure">
+            <span class="tab-icon">💦</span> Pressure Washing
+        </button>
+    </div>
+
+    <!-- JUNK REMOVAL PANEL -->
+    <div class="industry-panel active" id="panel-junk">
+        <div class="grid">
+            <div class="glow-card">
+                <h2 class="section-title">
+                    <svg class="icon" fill="none" stroke="#4ade80" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                    Quote This Job
+                </h2>
+                <div class="info-box yellow"><p style="margin:0;">Choose your job type and enter your pricing to analyze profit margins.</p></div>
+                <h3 style="color:rgba(255,255,255,0.9);font-size:1rem;font-weight:600;margin-bottom:1rem;">Job Type</h3>
+                <div class="form-group">
+                    <label>What are you quoting?</label>
+                    <select id="j-jobType" onchange="jUpdateJobType()">
+                        <option value="volume">Volume-Based (by truck load)</option>
+                        <option value="multipleLoads">Multiple Full Loads</option>
+                        <option value="specialty">Specialty Item Removal</option>
+                        <option value="mixed">Mixed (Specialty + Volume)</option>
+                    </select>
+                </div>
+                <div id="j-volumeSection">
+                    <div class="form-group">
+                        <label>Load Size</label>
+                        <select id="j-loadSize" onchange="jCalc()">
+                            <option value="minimum">Minimum Pickup (1-2 items)</option>
+                            <option value="quarter">1/4 Load</option>
+                            <option value="half" selected>1/2 Load</option>
+                            <option value="threeQuarter">3/4 Load</option>
+                            <option value="full">Full Load</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Your Price for This Load ($)</label>
+                        <input type="number" id="j-loadPrice" value="0" min="0" oninput="jCalc()">
+                    </div>
+                </div>
+                <div id="j-multiSection" style="display:none;">
+                    <div style="background:rgba(74,222,128,0.1);border-left:3px solid #4ade80;padding:1rem;border-radius:8px;margin-bottom:1rem;">
+                        <h4 style="color:#4ade80;font-weight:600;margin-bottom:0.5rem;">📦 Multiple Full Loads</h4>
+                        <p style="margin:0;font-size:0.875rem;">Price large jobs requiring multiple truck trips. Consider offering a per-load discount!</p>
+                    </div>
+                    <div class="form-group"><label>Number of Full Loads</label><input type="number" id="j-numLoads" value="1" min="1" max="10" oninput="jCalc()"><small>How many full truck loads for this job?</small></div>
+                    <div class="form-group"><label>Price Per Load ($)</label><input type="number" id="j-pricePerLoad" value="0" min="0" oninput="jCalc()"></div>
+                    <div class="form-group"><label>Discount Per Load (%) - Optional</label><input type="number" id="j-loadDiscount" value="0" min="0" max="50" oninput="jCalc()"></div>
+                    <div style="background:rgba(255,255,255,0.05);padding:1rem;border-radius:8px;margin-top:1rem;">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;"><span style="color:rgba(255,255,255,0.7);font-size:0.875rem;">Loads:</span><span style="color:#fff;font-weight:600;" id="j-dispLoads">1 load</span></div>
+                        <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;"><span style="color:rgba(255,255,255,0.7);font-size:0.875rem;">Price per load:</span><span style="color:#fff;font-weight:600;" id="j-dispPPL">$0</span></div>
+                        <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;"><span style="color:rgba(255,255,255,0.7);font-size:0.875rem;">Discount:</span><span style="color:#fbbf24;font-weight:600;" id="j-dispDisc">0%</span></div>
+                        <div style="display:flex;justify-content:space-between;padding-top:0.5rem;border-top:2px solid rgba(255,255,255,0.1);"><span style="color:#4ade80;font-weight:700;">Total Quote:</span><span style="color:#4ade80;font-weight:700;font-size:1.125rem;" id="j-dispMLTotal">$0.00</span></div>
+                    </div>
+                </div>
+                <div id="j-specialtySection" style="display:none;">
+                    <div class="form-group"><label>Specialty Item Type</label><select id="j-specialtyType" onchange="jCalc()"><option value="hottub">Hot Tub Removal</option><option value="trampoline">Trampoline Removal</option><option value="playset">Play Set Removal</option><option value="shed">Shed Removal/Demo</option><option value="pool">Above Ground Pool Removal</option><option value="piano">Piano Removal</option><option value="custom">Custom Specialty Item</option></select></div>
+                    <div class="form-group"><label>Your Price for This Item ($)</label><input type="number" id="j-specialtyPrice" value="0" min="0" oninput="jCalc()"></div>
+                    <div class="info-box green" style="margin-top:1rem;"><p style="margin:0;font-size:0.875rem;"><strong>💡 Specialty Pricing Tip:</strong> Factor in labor hours, equipment needs (saws, tools), disposal fees, and complexity. Hot tubs and pools often need cutting/disassembly. Sheds may require demo permits.</p></div>
+                </div>
+                <div id="j-mixedSection" style="display:none;">
+                    <div style="background:rgba(74,222,128,0.1);border-left:3px solid #4ade80;padding:1rem;border-radius:8px;margin-bottom:1rem;"><h4 style="color:#4ade80;font-weight:600;margin-bottom:0.5rem;">Mixed Job Pricing</h4><p style="margin:0;font-size:0.875rem;">Enter pricing for BOTH the specialty item and additional volume-based junk.</p></div>
+                    <h4 style="color:rgba(255,255,255,0.9);font-size:0.95rem;font-weight:600;margin-bottom:0.75rem;">Specialty Item:</h4>
+                    <div class="form-group"><label>Item Type</label><select id="j-mixedSpecType" onchange="jCalc()"><option value="hottub">Hot Tub</option><option value="trampoline">Trampoline</option><option value="playset">Play Set</option><option value="shed">Shed/Demo</option><option value="pool">Above Ground Pool</option><option value="piano">Piano</option><option value="custom">Custom Item</option></select></div>
+                    <div class="form-group"><label>Specialty Item Price ($)</label><input type="number" id="j-mixedSpecPrice" value="0" min="0" oninput="jCalc()"></div>
+                    <h4 style="color:rgba(255,255,255,0.9);font-size:0.95rem;font-weight:600;margin:1rem 0 0.75rem;">Additional Volume:</h4>
+                    <div class="form-group"><label>Additional Load Size</label><select id="j-mixedLoadSize" onchange="jCalc()"><option value="none">None</option><option value="minimum">Minimum (1-2 items)</option><option value="quarter" selected>1/4 Load</option><option value="half">1/2 Load</option><option value="threeQuarter">3/4 Load</option><option value="full">Full Load</option></select></div>
+                    <div class="form-group"><label>Additional Load Price ($)</label><input type="number" id="j-mixedLoadPrice" value="0" min="0" oninput="jCalc()"><small>Price for the extra junk beyond the specialty item</small></div>
+                </div>
+                <h3 style="color:rgba(255,255,255,0.9);font-size:1rem;font-weight:600;margin:1.5rem 0 1rem;">Job Complexity</h3>
+                <div style="margin-bottom:1rem;"><label class="checkbox-container"><input type="checkbox" id="j-applyStairs" onchange="jCalc()"><span style="flex:1;">Stairs</span></label><div style="padding-left:2rem;margin-top:0.5rem;"><label style="font-size:0.875rem;color:rgba(255,255,255,0.7);margin-bottom:0.25rem;">Additional Charge ($)</label><input type="number" id="j-stairsCharge" value="0" min="0" style="padding:0.5rem;" oninput="jCalc()"></div></div>
+                <div style="margin-bottom:1rem;"><label class="checkbox-container"><input type="checkbox" id="j-applyDis" onchange="jCalc()"><span style="flex:1;">Disassembly</span></label><div style="padding-left:2rem;margin-top:0.5rem;"><label style="font-size:0.875rem;color:rgba(255,255,255,0.7);margin-bottom:0.25rem;">Additional Charge ($)</label><input type="number" id="j-disCharge" value="0" min="0" style="padding:0.5rem;" oninput="jCalc()"></div></div>
+                <div style="margin-bottom:1rem;"><label class="checkbox-container"><input type="checkbox" id="j-applyHeavy" onchange="jCalc()"><span style="flex:1;">Heavy Items Surcharge</span></label><div style="padding-left:2rem;margin-top:0.5rem;"><label style="font-size:0.875rem;color:rgba(255,255,255,0.7);margin-bottom:0.25rem;">Additional Charge ($)</label><input type="number" id="j-heavyCharge" value="0" min="0" style="padding:0.5rem;" oninput="jCalc()"><small>Extra charge for difficult/heavy items (adds to your quote)</small></div></div>
+                <div style="margin-bottom:1rem;"><label class="checkbox-container"><input type="checkbox" id="j-applyDemo" onchange="jCalc()"><span style="flex:1;">Demolition Labor Fee</span></label><div style="padding-left:2rem;margin-top:0.5rem;"><label style="font-size:0.875rem;color:rgba(255,255,255,0.7);margin-bottom:0.25rem;">Additional Charge ($)</label><input type="number" id="j-demoCharge" value="0" min="0" style="padding:0.5rem;" oninput="jCalc()"><small>For sheds, decks, structures requiring demo work</small></div></div>
+                <div class="info-box green" style="margin-top:1.5rem;">
+                    <h4 style="color:#4ade80;font-weight:600;margin-bottom:0.5rem;">💡 Pricing Pro Tip: Debris Type Matters!</h4>
+                    <p style="margin:0;font-size:0.875rem;line-height:1.6;"><strong>Adjust your load price based on disposal costs:</strong><br><br><strong style="color:#ef4444;">Higher Price:</strong> Wood, construction debris, concrete, dirt → Must go to landfill (high dump fees)<br><br><strong style="color:#4ade80;">Lower Price:</strong> Furniture, appliances, household items → Can be recycled or donated (low/no dump fees)<br><br><strong style="color:#fbbf24;">Mixed Loads:</strong> Combination of both → Price in the middle<br><br>This strategy helps you win more jobs while protecting margins. <strong>You avoid under-bidding landfill jobs and over-bidding donation jobs!</strong></p>
+                    <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(74,222,128,0.3);"><h4 style="color:#4ade80;font-weight:600;margin-bottom:0.5rem;">📦 Multiple Loads Pro Tip</h4><p style="margin:0;font-size:0.875rem;line-height:1.6;"><strong>When pricing jobs requiring multiple full loads, it's smart to offer a per-load discount (10-15%).</strong> Example: Instead of $600/load × 3 = $1,800, offer 10% off = $1,620. Customer saves $180, you lock in a $1,600+ job!</p></div>
+                </div>
+                <h3 style="color:rgba(255,255,255,0.9);font-size:1rem;font-weight:600;margin:1.5rem 0 1rem;">Your Costs for This Job</h3>
+                <div class="form-group"><label>Landfill / Dump Fee ($)</label><input type="number" id="j-costLandfill" value="0" min="0" oninput="jCalc()"><small>Enter 0 if donating/recycling items</small></div>
+                <div class="form-group"><label>Dumpster Rental Cost ($)</label><input type="number" id="j-costDumpster" value="0" min="0" oninput="jCalc()"><small>For large jobs requiring a dumpster</small></div>
+                <div class="form-group"><label>Demo Machine Rental ($)</label><input type="number" id="j-costDemoMachine" value="0" min="0" oninput="jCalc()"><small>Excavator, bobcat, or other demo equipment</small></div>
+                <div class="form-group"><label>Truck / U-Haul Rental ($)</label><input type="number" id="j-costTruck" value="0" min="0" oninput="jCalc()"><small>If you're renting a truck or trailer for this job</small></div>
+                <div class="form-group"><label>Fuel Cost ($)</label><input type="number" id="j-costFuel" value="0" min="0" oninput="jCalc()"></div>
+                <div class="form-group"><label>Labor Cost - Wages Paid to Employees/Helpers ($)</label><input type="number" id="j-costLabor" value="0" min="0" oninput="jCalc()"><small>Total wages you pay out (rate × hours × number of workers)</small></div>
+                <div style="margin-top:2rem;text-align:center;">
+                    <button type="button" class="calc-btn" id="j-calcBtn" onclick="jCalc();jBtnFlash()">🔄 Update Profit Calculation</button>
+                    <p style="margin-top:0.75rem;font-size:0.875rem;color:rgba(255,255,255,0.6);">Tap after changing any values</p>
+                    <button type="button" class="clear-btn" id="j-clearBtn" onclick="jClear()">🗑️ Clear All Inputs</button>
+                    <p style="margin-top:0.5rem;font-size:0.75rem;color:rgba(255,255,255,0.5);">Reset all fields to start a new quote</p>
+                </div>
+                <div style="background:rgba(255,255,255,0.05);padding:1rem;border-radius:8px;margin-top:1.5rem;">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;"><span style="color:rgba(255,255,255,0.7);">Total Costs:</span><span style="color:#fff;font-weight:700;font-size:1.125rem;" id="j-dispTotalCost">$0.00</span></div>
+                    <div style="display:flex;justify-content:space-between;"><span style="color:rgba(255,255,255,0.7);">Total Quote Price:</span><span style="color:#4ade80;font-weight:700;font-size:1.125rem;" id="j-dispQuote">$0.00</span></div>
+                </div>
+            </div>
+            <div>
+                <div class="glow-card">
+                    <h3 style="display:flex;align-items:center;gap:0.5rem;margin:0 0 1.5rem 0;font-size:1.125rem;font-weight:600;"><svg class="icon" fill="none" stroke="#4ade80" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>Current Profit Margin</h3>
+                    <div style="text-align:center;margin-bottom:1.5rem;"><div style="font-size:4rem;font-weight:700;line-height:1;" id="j-marginPct">0.0%</div><p style="color:rgba(255,255,255,0.7);font-size:0.875rem;margin-top:0.5rem;">Gross Profit Margin</p></div>
+                    <div class="progress-bar" style="margin-bottom:0.5rem;"><div class="progress-fill" id="j-marginBar" style="width:0%;background:linear-gradient(90deg,#4ade80,#22c55e);"></div></div>
+                    <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:rgba(255,255,255,0.6);margin-bottom:1rem;"><span>0%</span><span>30%</span><span>50%</span><span>100%</span></div>
+                    <div id="j-marginStatus"></div>
+                    <div style="background:rgba(255,255,255,0.05);padding:1rem;border-radius:8px;margin-top:1rem;">
+                        <div style="display:flex;justify-content:space-between;padding:0.5rem 0;"><span style="color:rgba(255,255,255,0.7);">Revenue:</span><span style="color:#fff;font-weight:600;" id="j-dispRev">$0.00</span></div>
+                        <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-top:1px solid rgba(255,255,255,0.1);"><span style="color:rgba(255,255,255,0.7);">Costs:</span><span style="color:#fff;font-weight:600;" id="j-dispCosts">$0.00</span></div>
+                        <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-top:2px solid rgba(255,255,255,0.2);"><span style="color:#4ade80;font-weight:700;">Profit:</span><span style="color:#4ade80;font-weight:700;font-size:1.25rem;" id="j-dispProfit">$0.00</span></div>
+                    </div>
+                </div>
+                <div class="glow-card" style="margin-top:2rem;">
+                    <h3 style="display:flex;align-items:center;gap:0.5rem;margin:0 0 1.5rem 0;font-size:1.125rem;font-weight:600;"><svg class="icon" fill="none" stroke="#4ade80" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Recommended Pricing</h3>
+                    <div style="background:rgba(239,68,68,0.1);border-left:3px solid #ef4444;padding:1rem;border-radius:4px;margin-bottom:1rem;"><div style="display:flex;justify-content:space-between;align-items:center;"><div><strong style="color:#ef4444;">20-30% Margin</strong><p style="font-size:0.75rem;color:rgba(255,255,255,0.7);margin:0.25rem 0 0 0;">Minimum viable</p></div><div style="font-size:1.5rem;font-weight:700;color:#ef4444;" id="j-recLow">Enter costs</div></div></div>
+                    <div style="background:rgba(251,191,36,0.1);border-left:3px solid #fbbf24;padding:1rem;border-radius:4px;margin-bottom:1rem;"><div style="display:flex;justify-content:space-between;align-items:center;"><div><strong style="color:#fbbf24;">31-49% Margin</strong><p style="font-size:0.75rem;color:rgba(255,255,255,0.7);margin:0.25rem 0 0 0;">Moderate profit</p></div><div style="font-size:1.5rem;font-weight:700;color:#fbbf24;" id="j-recMed">Enter costs</div></div></div>
+                    <div style="background:rgba(74,222,128,0.1);border-left:3px solid #4ade80;padding:1rem;border-radius:4px;"><div style="display:flex;justify-content:space-between;align-items:center;"><div><strong style="color:#4ade80;">50-65% Margin</strong><p style="font-size:0.75rem;color:rgba(255,255,255,0.7);margin:0.25rem 0 0 0;">Target zone ✓</p></div><div style="font-size:1.5rem;font-weight:700;color:#4ade80;" id="j-recHigh">Enter costs</div></div></div>
+                </div>
+            </div>
+        </div>
+        <div class="bottom-grid">
+            <div class="glow-card">
+                <h4 style="color:#4ade80;font-size:1rem;font-weight:600;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;"><svg class="icon" fill="none" stroke="#4ade80" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>💡 Pro Tips</h4>
+                <ul style="color:rgba(255,255,255,0.8);font-size:0.875rem;line-height:1.6;padding-left:1.25rem;">
+                    <li style="margin-bottom:0.75rem;">Always quote a price range when calling customers</li>
+                    <li style="margin-bottom:0.75rem;">Confirm the exact price when you arrive and see the actual load</li>
+                    <li style="margin-bottom:0.75rem;">Track your actual costs weekly to stay profitable</li>
+                    <li style="margin-bottom:0.75rem;"><strong>Donation Strategy:</strong> If you can donate items instead of dumping, keep your quote slightly lower. You'll avoid landfill fees AND maintain high profit margins—win-win!</li>
+                </ul>
+            </div>
+            <div class="glow-card">
+                <h4 style="color:#4ade80;font-size:1rem;font-weight:600;margin-bottom:1rem;">National Average Pricing (USA)</h4>
+                <table class="price-table"><thead><tr><th>Load Size</th><th style="text-align:right;">Average Range</th></tr></thead><tbody><tr><td>Minimum Pickup</td><td>$75 - $150</td></tr><tr><td>1/4 Load</td><td>$150 - $250</td></tr><tr><td>1/2 Load</td><td>$250 - $450</td></tr><tr><td>3/4 Load</td><td>$400 - $600</td></tr><tr><td>Full Load</td><td>$550 - $850</td></tr></tbody></table>
+                <div style="background:rgba(251,191,36,0.1);border-left:3px solid #fbbf24;padding:1rem;border-radius:4px;margin-top:1rem;"><p style="color:rgba(255,255,255,0.9);font-size:0.875rem;line-height:1.6;margin:0;"><strong style="color:#fbbf24;">⚠️ Important Disclaimer:</strong> Pricing varies significantly by region. Always call 3-5 competitors in your area. This calculator helps you maintain high profit margins based on your actual costs—not to set industry prices.</p></div>
+            </div>
+        </div>
+    </div><!-- LAWN CARE PANEL -->
+    <div class="industry-panel" id="panel-lawn">
+        <div class="grid">
+            <div class="glow-card">
+                <h2 class="section-title">
+                    <svg class="icon" fill="none" stroke="#4ade80" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                    Quote This Job
+                </h2>
+                <div class="info-box yellow"><p style="margin:0;">Select your service type and enter your pricing to analyze profit margins.</p></div>
+                <div class="form-group">
+                    <label>Service Type</label>
+                    <select id="l-serviceType" onchange="lUpdateService()">
+                        <option value="mow">Mow &amp; Edge</option>
+                        <option value="cleanup">Full Yard Cleanup</option>
+                        <option value="mulch">Mulching</option>
+                        <option value="trim">Bush / Hedge Trimming</option>
+                        <option value="leaf">Leaf Removal</option>
+                        <option value="aerate">Aeration / Overseeding</option>
+                    </select>
+                </div>
+                <div id="l-mowSection">
+                    <div class="form-group"><label>Yard Size</label><select id="l-yardSize" onchange="lCalc()"><option value="small">Small (under 5,000 sq ft)</option><option value="medium" selected>Medium (5,000–10,000 sq ft)</option><option value="large">Large (10,000–20,000 sq ft)</option><option value="xlarge">XL (over 20,000 sq ft)</option></select></div>
+                    <div class="form-group"><label>Your Price ($)</label><input type="number" id="l-mowPrice" value="0" min="0" oninput="lCalc()"></div>
+                    <div class="info-box green"><p style="margin:0;font-size:0.875rem;"><strong>💡 Mowing Tip:</strong> Most crews can mow a medium yard in 30–45 min. Factor in drive time too — if you're spending 20 min driving for a $35 job, your real hourly rate drops fast.</p></div>
+                </div>
+                <div id="l-cleanupSection" style="display:none;">
+                    <div class="form-group"><label>Cleanup Scope</label><select id="l-cleanupScope" onchange="lCalc()"><option value="light">Light (trim, edge, blow)</option><option value="medium" selected>Medium (weeding + debris removal)</option><option value="heavy">Heavy (overgrown, full haul-away)</option></select></div>
+                    <div class="form-group"><label>Your Price ($)</label><input type="number" id="l-cleanupPrice" value="0" min="0" oninput="lCalc()"></div>
+                    <div class="info-box green"><p style="margin:0;font-size:0.875rem;"><strong>💡 Cleanup Tip:</strong> Always charge extra if debris needs to be hauled away. Disposal fees and truck space have real costs — never include haul-away for free!</p></div>
+                </div>
+                <div id="l-mulchSection" style="display:none;">
+                    <div class="form-group"><label>Number of Yards of Mulch</label><input type="number" id="l-mulchYards" value="1" min="0.5" step="0.5" oninput="lCalc()"><small>1 yard of mulch covers roughly 100 sq ft at 3" depth</small></div>
+                    <div class="form-group"><label>Your Total Price ($)</label><input type="number" id="l-mulchPrice" value="0" min="0" oninput="lCalc()"></div>
+                    <div class="info-box green"><p style="margin:0;font-size:0.875rem;"><strong>💡 Mulch Tip:</strong> Charge separately for mulch material AND labor. Typical markup on mulch is 2–3x your cost. Don't let customers supply their own mulch — you lose the material profit.</p></div>
+                </div>
+                <div id="l-trimSection" style="display:none;">
+                    <div class="form-group"><label>Number of Bushes / Hedges</label><input type="number" id="l-trimCount" value="1" min="1" oninput="lCalc()"></div>
+                    <div class="form-group"><label>Your Total Price ($)</label><input type="number" id="l-trimPrice" value="0" min="0" oninput="lCalc()"></div>
+                    <div class="info-box green"><p style="margin:0;font-size:0.875rem;"><strong>💡 Trimming Tip:</strong> Most pros charge $6–$15 per bush depending on size. Always add a debris haul-away fee if you're taking clippings away.</p></div>
+                </div>
+                <div id="l-leafSection" style="display:none;">
+                    <div class="form-group"><label>Leaf Volume</label><select id="l-leafVolume" onchange="lCalc()"><option value="light">Light coverage</option><option value="medium" selected>Medium (multiple bags)</option><option value="heavy">Heavy (full yard, haul required)</option></select></div>
+                    <div class="form-group"><label>Your Price ($)</label><input type="number" id="l-leafPrice" value="0" min="0" oninput="lCalc()"></div>
+                    <div class="info-box green"><p style="margin:0;font-size:0.875rem;"><strong>💡 Leaf Removal Tip:</strong> If hauling leaves away, price like a junk removal job. If bagging curbside, price is lower. Always quote after seeing the yard — leaf jobs vary wildly.</p></div>
+                </div>
+                <div id="l-aerateSection" style="display:none;">
+                    <div class="form-group"><label>Yard Size (sq ft)</label><input type="number" id="l-aerateSqft" value="5000" min="500" oninput="lCalc()"><small>Aeration is typically priced per 1,000 sq ft</small></div>
+                    <div class="form-group"><label>Your Total Price ($)</label><input type="number" id="l-aeratePrice" value="0" min="0" oninput="lCalc()"></div>
+                    <div class="info-box green"><p style="margin:0;font-size:0.875rem;"><strong>💡 Aeration Tip:</strong> You can rent an aerator for $80–150/day and do multiple yards. If you own the machine, equipment cost drops to zero — pure labor job with great margins.</p></div>
+                </div>
+                <h3 style="color:rgba(255,255,255,0.9);font-size:1rem;font-weight:600;margin:1.5rem 0 1rem;">Job Add-Ons</h3>
+                <div style="margin-bottom:1rem;"><label class="checkbox-container"><input type="checkbox" id="l-applyOvergrown" onchange="lCalc()"><span style="flex:1;">Overgrown / Neglected Yard Surcharge</span></label><div style="padding-left:2rem;margin-top:0.5rem;"><label style="font-size:0.875rem;color:rgba(255,255,255,0.7);margin-bottom:0.25rem;">Additional Charge ($)</label><input type="number" id="l-overgrownCharge" value="0" min="0" style="padding:0.5rem;" oninput="lCalc()"><small>Extra time for first-time cleanups or severely neglected properties</small></div></div>
+                <div style="margin-bottom:1rem;"><label class="checkbox-container"><input type="checkbox" id="l-applyHaul" onchange="lCalc()"><span style="flex:1;">Debris Haul-Away Fee</span></label><div style="padding-left:2rem;margin-top:0.5rem;"><label style="font-size:0.875rem;color:rgba(255,255,255,0.7);margin-bottom:0.25rem;">Additional Charge ($)</label><input type="number" id="l-haulCharge" value="0" min="0" style="padding:0.5rem;" oninput="lCalc()"><small>When you're hauling clippings, leaves, or yard waste away</small></div></div>
+                <div style="margin-bottom:1rem;"><label class="checkbox-container"><input type="checkbox" id="l-applySlope" onchange="lCalc()"><span style="flex:1;">Steep Slope / Hill Surcharge</span></label><div style="padding-left:2rem;margin-top:0.5rem;"><label style="font-size:0.875rem;color:rgba(255,255,255,0.7);margin-bottom:0.25rem;">Additional Charge ($)</label><input type="number" id="l-slopeCharge" value="0" min="0" style="padding:0.5rem;" oninput="lCalc()"></div></div>
+                <div style="margin-bottom:1rem;"><label class="checkbox-container"><input type="checkbox" id="l-applyTravel" onchange="lCalc()"><span style="flex:1;">Travel / Distance Surcharge</span></label><div style="padding-left:2rem;margin-top:0.5rem;"><label style="font-size:0.875rem;color:rgba(255,255,255,0.7);margin-bottom:0.25rem;">Additional Charge ($)</label><input type="number" id="l-travelCharge" value="0" min="0" style="padding:0.5rem;" oninput="lCalc()"><small>For jobs far from your normal service area</small></div></div>
+                <h3 style="color:rgba(255,255,255,0.9);font-size:1rem;font-weight:600;margin:1.5rem 0 1rem;">Your Costs for This Job</h3>
+                <div class="form-group"><label>Fuel Cost ($)</label><input type="number" id="l-costFuel" value="0" min="0" oninput="lCalc()"></div>
+                <div class="form-group"><label>Labor Cost - Wages Paid to Helpers ($)</label><input type="number" id="l-costLabor" value="0" min="0" oninput="lCalc()"><small>Total wages you pay out (rate × hours × number of workers)</small></div>
+                <div class="form-group"><label>Material Cost (mulch, seed, fertilizer, etc.) ($)</label><input type="number" id="l-costMaterial" value="0" min="0" oninput="lCalc()"></div>
+                <div class="form-group"><label>Equipment Rental ($)</label><input type="number" id="l-costEquip" value="0" min="0" oninput="lCalc()"><small>Aerator, tiller, chipper, trailer rental, etc.</small></div>
+                <div class="form-group"><label>Dump / Disposal Fee ($)</label><input type="number" id="l-costDump" value="0" min="0" oninput="lCalc()"><small>For yard waste disposal if not composted or left curbside</small></div>
+                <div style="margin-top:2rem;text-align:center;">
+                    <button type="button" class="calc-btn" id="l-calcBtn" onclick="lCalc();lBtnFlash()">🔄 Update Profit Calculation</button>
+                    <p style="margin-top:0.75rem;font-size:0.875rem;color:rgba(255,255,255,0.6);">Tap after changing any values</p>
+                    <button type="button" class="clear-btn" id="l-clearBtn" onclick="lClear()">🗑️ Clear All Inputs</button>
+                    <p style="margin-top:0.5rem;font-size:0.75rem;color:rgba(255,255,255,0.5);">Reset all fields to start a new quote</p>
+                </div>
+                <div style="background:rgba(255,255,255,0.05);padding:1rem;border-radius:8px;margin-top:1.5rem;">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;"><span style="color:rgba(255,255,255,0.7);">Total Costs:</span><span style="color:#fff;font-weight:700;font-size:1.125rem;" id="l-dispTotalCost">$0.00</span></div>
+                    <div style="display:flex;justify-content:space-between;"><span style="color:rgba(255,255,255,0.7);">Total Quote Price:</span><span style="color:#4ade80;font-weight:700;font-size:1.125rem;" id="l-dispQuote">$0.00</span></div>
+                </div>
+            </div>
+            <div>
+                <div class="glow-card">
+                    <h3 style="display:flex;align-items:center;gap:0.5rem;margin:0 0 1.5rem 0;font-size:1.125rem;font-weight:600;"><svg class="icon" fill="none" stroke="#4ade80" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>Current Profit Margin</h3>
+                    <div style="text-align:center;margin-bottom:1.5rem;"><div style="font-size:4rem;font-weight:700;line-height:1;" id="l-marginPct">0.0%</div><p style="color:rgba(255,255,255,0.7);font-size:0.875rem;margin-top:0.5rem;">Gross Profit Margin</p></div>
+                    <div class="progress-bar" style="margin-bottom:0.5rem;"><div class="progress-fill" id="l-marginBar" style="width:0%;background:linear-gradient(90deg,#4ade80,#22c55e);"></div></div>
+                    <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:rgba(255,255,255,0.6);margin-bottom:1rem;"><span>0%</span><span>30%</span><span>50%</span><span>100%</span></div>
+                    <div id="l-marginStatus"></div>
+                    <div style="background:rgba(255,255,255,0.05);padding:1rem;border-radius:8px;margin-top:1rem;">
+                        <div style="display:flex;justify-content:space-between;padding:0.5rem 0;"><span style="color:rgba(255,255,255,0.7);">Revenue:</span><span style="color:#fff;font-weight:600;" id="l-dispRev">$0.00</span></div>
+                        <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-top:1px solid rgba(255,255,255,0.1);"><span style="color:rgba(255,255,255,0.7);">Costs:</span><span style="color:#fff;font-weight:600;" id="l-dispCosts">$0.00</span></div>
+                        <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-top:2px solid rgba(255,255,255,0.2);"><span style="color:#4ade80;font-weight:700;">Profit:</span><span style="color:#4ade80;font-weight:700;font-size:1.25rem;" id="l-dispProfit">$0.00</span></div>
+                    </div>
+                </div>
+                <div class="glow-card" style="margin-top:2rem;">
+                    <h3 style="display:flex;align-items:center;gap:0.5rem;margin:0 0 1.5rem 0;font-size:1.125rem;font-weight:600;"><svg class="icon" fill="none" stroke="#4ade80" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Recommended Pricing</h3>
+                    <div style="background:rgba(239,68,68,0.1);border-left:3px solid #ef4444;padding:1rem;border-radius:4px;margin-bottom:1rem;"><div style="display:flex;justify-content:space-between;align-items:center;"><div><strong style="color:#ef4444;">20-30% Margin</strong><p style="font-size:0.75rem;color:rgba(255,255,255,0.7);margin:0.25rem 0 0 0;">Minimum viable</p></div><div style="font-size:1.5rem;font-weight:700;color:#ef4444;" id="l-recLow">Enter costs</div></div></div>
+                    <div style="background:rgba(251,191,36,0.1);border-left:3px solid #fbbf24;padding:1rem;border-radius:4px;margin-bottom:1rem;"><div style="display:flex;justify-content:space-between;align-items:center;"><div><strong style="color:#fbbf24;">31-49% Margin</strong><p style="font-size:0.75rem;color:rgba(255,255,255,0.7);margin:0.25rem 0 0 0;">Moderate profit</p></div><div style="font-size:1.5rem;font-weight:700;color:#fbbf24;" id="l-recMed">Enter costs</div></div></div>
+                    <div style="background:rgba(74,222,128,0.1);border-left:3px solid #4ade80;padding:1rem;border-radius:4px;"><div style="display:flex;justify-content:space-between;align-items:center;"><div><strong style="color:#4ade80;">50-65% Margin</strong><p style="font-size:0.75rem;color:rgba(255,255,255,0.7);margin:0.25rem 0 0 0;">Target zone ✓</p></div><div style="font-size:1.5rem;font-weight:700;color:#4ade80;" id="l-recHigh">Enter costs</div></div></div>
+                </div>
+            </div>
+        </div>
+        <div class="bottom-grid">
+            <div class="glow-card">
+                <h4 style="color:#4ade80;font-size:1rem;font-weight:600;margin-bottom:1rem;">💡 Lawn Care Pro Tips</h4>
+                <ul style="color:rgba(255,255,255,0.8);font-size:0.875rem;line-height:1.6;padding-left:1.25rem;">
+                    <li style="margin-bottom:0.75rem;">Always see the yard before quoting — photos lie. Overgrown yards take 3x longer.</li>
+                    <li style="margin-bottom:0.75rem;">Bundle services to increase ticket size. A mow + edge + blow + trim is worth more than individual quotes.</li>
+                    <li style="margin-bottom:0.75rem;">Route your jobs geographically — driving between jobs is your biggest hidden cost.</li>
+                    <li style="margin-bottom:0.75rem;"><strong>Recurring contracts:</strong> Weekly or biweekly mowing contracts are more predictable income than one-time jobs. Offer a small discount for recurring bookings to lock customers in.</li>
+                </ul>
+            </div>
+            <div class="glow-card">
+                <h4 style="color:#4ade80;font-size:1rem;font-weight:600;margin-bottom:1rem;">National Average Pricing (USA)</h4>
+                <table class="price-table"><thead><tr><th>Service</th><th style="text-align:right;">Average Range</th></tr></thead><tbody><tr><td>Mow &amp; Edge (small)</td><td>$35 - $65</td></tr><tr><td>Mow &amp; Edge (medium)</td><td>$55 - $95</td></tr><tr><td>Mow &amp; Edge (large)</td><td>$85 - $150</td></tr><tr><td>Full Yard Cleanup</td><td>$150 - $400</td></tr><tr><td>Mulching (per yard)</td><td>$65 - $120</td></tr><tr><td>Leaf Removal</td><td>$100 - $350</td></tr><tr><td>Aeration (5,000 sq ft)</td><td>$75 - $150</td></tr></tbody></table>
+                <div style="background:rgba(251,191,36,0.1);border-left:3px solid #fbbf24;padding:1rem;border-radius:4px;margin-top:1rem;"><p style="color:rgba(255,255,255,0.9);font-size:0.875rem;line-height:1.6;margin:0;"><strong style="color:#fbbf24;">⚠️ Disclaimer:</strong> Prices vary widely by region, season, and property condition. Always check local competitors before setting your rates.</p></div>
+            </div>
+        </div>
+    </div><!-- PRESSURE WASHING PANEL -->
+    <div class="industry-panel" id="panel-pressure">
+        <div class="grid">
+            <div class="glow-card">
+                <h2 class="section-title">
+                    <svg class="icon" fill="none" stroke="#4ade80" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                    Quote This Job
+                </h2>
+                <div class="info-box yellow"><p style="margin:0;">Select the surface type and enter your pricing to analyze profit margins.</p></div>
+                <div class="form-group">
+                    <label>Surface Type</label>
+                    <select id="p-surfaceType" onchange="pUpdateSurface()">
+                        <option value="driveway">Driveway</option>
+                        <option value="house">House Exterior / Siding</option>
+                        <option value="deck">Deck or Patio</option>
+                        <option value="fence">Fence</option>
+                        <option value="roof">Roof Soft Wash</option>
+                        <option value="commercial">Commercial / Parking Lot</option>
+                    </select>
+                </div>
+                <div id="p-drivewaySection">
+                    <div class="form-group"><label>Driveway Size</label><select id="p-drivewaySize" onchange="pCalc()"><option value="single">Single car (1 stall)</option><option value="double" selected>Double car (2 stalls)</option><option value="large">Large / extended driveway</option></select></div>
+                    <div class="form-group"><label>Your Price ($)</label><input type="number" id="p-drivewayPrice" value="0" min="0" oninput="pCalc()"></div>
+                    <div class="info-box green"><p style="margin:0;font-size:0.875rem;"><strong>💡 Driveway Tip:</strong> Concrete driveways with oil stains may need degreaser ($10–20 extra cost). Charge accordingly — stained driveways take longer and use more chemical.</p></div>
+                </div>
+                <div id="p-houseSection" style="display:none;">
+                    <div class="form-group"><label>House Size</label><select id="p-houseSize" onchange="pCalc()"><option value="small">Small (under 1,500 sq ft)</option><option value="medium" selected>Medium (1,500–2,500 sq ft)</option><option value="large">Large (2,500–4,000 sq ft)</option><option value="xlarge">XL (over 4,000 sq ft)</option></select></div>
+                    <div class="form-group"><label>Your Price ($)</label><input type="number" id="p-housePrice" value="0" min="0" oninput="pCalc()"></div>
+                    <div class="info-box green"><p style="margin:0;font-size:0.875rem;"><strong>💡 House Wash Tip:</strong> Most house washes are soft wash (low pressure + chemical), not high pressure. Soft wash uses more chemical but protects the siding. Factor in soap cost and rinse time.</p></div>
+                </div>
+                <div id="p-deckSection" style="display:none;">
+                    <div class="form-group"><label>Deck / Patio Size (sq ft)</label><input type="number" id="p-deckSqft" value="200" min="50" oninput="pCalc()"><small>Average deck is 200–400 sq ft</small></div>
+                    <div class="form-group"><label>Your Price ($)</label><input type="number" id="p-deckPrice" value="0" min="0" oninput="pCalc()"></div>
+                    <div class="info-box green"><p style="margin:0;font-size:0.875rem;"><strong>💡 Deck Tip:</strong> Wood decks need lower pressure than concrete to avoid damage. Add an upsell for sealing/staining after washing — that's a $300–800 add-on job you can offer on the spot.</p></div>
+                </div>
+                <div id="p-fenceSection" style="display:none;">
+                    <div class="form-group"><label>Fence Length (linear feet)</label><input type="number" id="p-fenceLength" value="100" min="10" oninput="pCalc()"><small>Measure total linear feet of fence to be washed</small></div>
+                    <div class="form-group"><label>Your Price ($)</label><input type="number" id="p-fencePrice" value="0" min="0" oninput="pCalc()"></div>
+                    <div class="info-box green"><p style="margin:0;font-size:0.875rem;"><strong>💡 Fence Tip:</strong> Wood fences take longer and need gentler pressure. Vinyl fences are faster. Price wood 20–30% higher than vinyl for the same linear footage.</p></div>
+                </div>
+                <div id="p-roofSection" style="display:none;">
+                    <div class="form-group"><label>Roof Size</label><select id="p-roofSize" onchange="pCalc()"><option value="small">Small (under 1,500 sq ft)</option><option value="medium" selected>Medium (1,500–2,500 sq ft)</option><option value="large">Large (over 2,500 sq ft)</option></select></div>
+                    <div class="form-group"><label>Your Price ($)</label><input type="number" id="p-roofPrice" value="0" min="0" oninput="pCalc()"></div>
+                    <div class="info-box green"><p style="margin:0;font-size:0.875rem;"><strong>💡 Roof Soft Wash Tip:</strong> Never use high pressure on roofs — you'll void warranties and blow off shingles. Soft wash is chemical-heavy (sodium hypochlorite + surfactant). Chemical cost can be $30–80 per job — price accordingly.</p></div>
+                </div>
+                <div id="p-commercialSection" style="display:none;">
+                    <div class="form-group"><label>Surface Area (sq ft)</label><input type="number" id="p-commSqft" value="1000" min="100" oninput="pCalc()"></div>
+                    <div class="form-group"><label>Your Price ($)</label><input type="number" id="p-commPrice" value="0" min="0" oninput="pCalc()"></div>
+                    <div class="info-box green"><p style="margin:0;font-size:0.875rem;"><strong>💡 Commercial Tip:</strong> Commercial jobs often require a certificate of insurance (COI). If you have one, charge a premium — many competitors can't bid commercial jobs without it.</p></div>
+                </div>
+                <h3 style="color:rgba(255,255,255,0.9);font-size:1rem;font-weight:600;margin:1.5rem 0 1rem;">Job Add-Ons</h3>
+                <div style="margin-bottom:1rem;"><label class="checkbox-container"><input type="checkbox" id="p-applyMold" onchange="pCalc()"><span style="flex:1;">Heavy Mold / Mildew Treatment</span></label><div style="padding-left:2rem;margin-top:0.5rem;"><label style="font-size:0.875rem;color:rgba(255,255,255,0.7);margin-bottom:0.25rem;">Additional Charge ($)</label><input type="number" id="p-moldCharge" value="0" min="0" style="padding:0.5rem;" oninput="pCalc()"><small>Extra chemical + time for black mold or algae</small></div></div>
+                <div style="margin-bottom:1rem;"><label class="checkbox-container"><input type="checkbox" id="p-applyMulti" onchange="pCalc()"><span style="flex:1;">Multiple Surfaces (bundle)</span></label><div style="padding-left:2rem;margin-top:0.5rem;"><label style="font-size:0.875rem;color:rgba(255,255,255,0.7);margin-bottom:0.25rem;">Additional Charge ($)</label><input type="number" id="p-multiCharge" value="0" min="0" style="padding:0.5rem;" oninput="pCalc()"><small>Add-on price for washing extra surfaces same visit</small></div></div>
+                <div style="margin-bottom:1rem;"><label class="checkbox-container"><input type="checkbox" id="p-applyTravel" onchange="pCalc()"><span style="flex:1;">Travel / Distance Surcharge</span></label><div style="padding-left:2rem;margin-top:0.5rem;"><label style="font-size:0.875rem;color:rgba(255,255,255,0.7);margin-bottom:0.25rem;">Additional Charge ($)</label><input type="number" id="p-travelCharge" value="0" min="0" style="padding:0.5rem;" oninput="pCalc()"></div></div>
+                <h3 style="color:rgba(255,255,255,0.9);font-size:1rem;font-weight:600;margin:1.5rem 0 1rem;">Your Costs for This Job</h3>
+                <div class="form-group"><label>Chemical / Soap Cost ($)</label><input type="number" id="p-costChemical" value="0" min="0" oninput="pCalc()"><small>Sodium hypochlorite, degreaser, surfactant, etc.</small></div>
+                <div class="form-group"><label>Fuel Cost ($)</label><input type="number" id="p-costFuel" value="0" min="0" oninput="pCalc()"></div>
+                <div class="form-group"><label>Labor Cost - Wages Paid to Helpers ($)</label><input type="number" id="p-costLabor" value="0" min="0" oninput="pCalc()"><small>Total wages you pay out (rate × hours × number of workers)</small></div>
+                <div class="form-group"><label>Equipment Rental ($)</label><input type="number" id="p-costEquip" value="0" min="0" oninput="pCalc()"><small>If renting a pressure washer or surface cleaner attachment</small></div>
+                <div class="form-group"><label>Water / Access Fee ($)</label><input type="number" id="p-costWater" value="0" min="0" oninput="pCalc()"><small>If you need to haul water (water tank truck jobs)</small></div>
+                <div style="margin-top:2rem;text-align:center;">
+                    <button type="button" class="calc-btn" id="p-calcBtn" onclick="pCalc();pBtnFlash()">🔄 Update Profit Calculation</button>
+                    <p style="margin-top:0.75rem;font-size:0.875rem;color:rgba(255,255,255,0.6);">Tap after changing any values</p>
+                    <button type="button" class="clear-btn" id="p-clearBtn" onclick="pClear()">🗑️ Clear All Inputs</button>
+                    <p style="margin-top:0.5rem;font-size:0.75rem;color:rgba(255,255,255,0.5);">Reset all fields to start a new quote</p>
+                </div>
+                <div style="background:rgba(255,255,255,0.05);padding:1rem;border-radius:8px;margin-top:1.5rem;">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;"><span style="color:rgba(255,255,255,0.7);">Total Costs:</span><span style="color:#fff;font-weight:700;font-size:1.125rem;" id="p-dispTotalCost">$0.00</span></div>
+                    <div style="display:flex;justify-content:space-between;"><span style="color:rgba(255,255,255,0.7);">Total Quote Price:</span><span style="color:#4ade80;font-weight:700;font-size:1.125rem;" id="p-dispQuote">$0.00</span></div>
+                </div>
+            </div>
+            <div>
+                <div class="glow-card">
+                    <h3 style="display:flex;align-items:center;gap:0.5rem;margin:0 0 1.5rem 0;font-size:1.125rem;font-weight:600;"><svg class="icon" fill="none" stroke="#4ade80" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>Current Profit Margin</h3>
+                    <div style="text-align:center;margin-bottom:1.5rem;"><div style="font-size:4rem;font-weight:700;line-height:1;" id="p-marginPct">0.0%</div><p style="color:rgba(255,255,255,0.7);font-size:0.875rem;margin-top:0.5rem;">Gross Profit Margin</p></div>
+                    <div class="progress-bar" style="margin-bottom:0.5rem;"><div class="progress-fill" id="p-marginBar" style="width:0%;background:linear-gradient(90deg,#4ade80,#22c55e);"></div></div>
+                    <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:rgba(255,255,255,0.6);margin-bottom:1rem;"><span>0%</span><span>30%</span><span>50%</span><span>100%</span></div>
+                    <div id="p-marginStatus"></div>
+                    <div style="background:rgba(255,255,255,0.05);padding:1rem;border-radius:8px;margin-top:1rem;">
+                        <div style="display:flex;justify-content:space-between;padding:0.5rem 0;"><span style="color:rgba(255,255,255,0.7);">Revenue:</span><span style="color:#fff;font-weight:600;" id="p-dispRev">$0.00</span></div>
+                        <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-top:1px solid rgba(255,255,255,0.1);"><span style="color:rgba(255,255,255,0.7);">Costs:</span><span style="color:#fff;font-weight:600;" id="p-dispCosts">$0.00</span></div>
+                        <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-top:2px solid rgba(255,255,255,0.2);"><span style="color:#4ade80;font-weight:700;">Profit:</span><span style="color:#4ade80;font-weight:700;font-size:1.25rem;" id="p-dispProfit">$0.00</span></div>
+                    </div>
+                </div>
+                <div class="glow-card" style="margin-top:2rem;">
+                    <h3 style="display:flex;align-items:center;gap:0.5rem;margin:0 0 1.5rem 0;font-size:1.125rem;font-weight:600;"><svg class="icon" fill="none" stroke="#4ade80" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Recommended Pricing</h3>
+                    <div style="background:rgba(239,68,68,0.1);border-left:3px solid #ef4444;padding:1rem;border-radius:4px;margin-bottom:1rem;"><div style="display:flex;justify-content:space-between;align-items:center;"><div><strong style="color:#ef4444;">20-30% Margin</strong><p style="font-size:0.75rem;color:rgba(255,255,255,0.7);margin:0.25rem 0 0 0;">Minimum viable</p></div><div style="font-size:1.5rem;font-weight:700;color:#ef4444;" id="p-recLow">Enter costs</div></div></div>
+                    <div style="background:rgba(251,191,36,0.1);border-left:3px solid #fbbf24;padding:1rem;border-radius:4px;margin-bottom:1rem;"><div style="display:flex;justify-content:space-between;align-items:center;"><div><strong style="color:#fbbf24;">31-49% Margin</strong><p style="font-size:0.75rem;color:rgba(255,255,255,0.7);margin:0.25rem 0 0 0;">Moderate profit</p></div><div style="font-size:1.5rem;font-weight:700;color:#fbbf24;" id="p-recMed">Enter costs</div></div></div>
+                    <div style="background:rgba(74,222,128,0.1);border-left:3px solid #4ade80;padding:1rem;border-radius:4px;"><div style="display:flex;justify-content:space-between;align-items:center;"><div><strong style="color:#4ade80;">50-65% Margin</strong><p style="font-size:0.75rem;color:rgba(255,255,255,0.7);margin:0.25rem 0 0 0;">Target zone ✓</p></div><div style="font-size:1.5rem;font-weight:700;color:#4ade80;" id="p-recHigh">Enter costs</div></div></div>
+                </div>
+            </div>
+        </div>
+        <div class="bottom-grid">
+            <div class="glow-card">
+                <h4 style="color:#4ade80;font-size:1rem;font-weight:600;margin-bottom:1rem;">💡 Pressure Washing Pro Tips</h4>
+                <ul style="color:rgba(255,255,255,0.8);font-size:0.875rem;line-height:1.6;padding-left:1.25rem;">
+                    <li style="margin-bottom:0.75rem;">Pressure washing has some of the highest margins in home services — your main costs are time, chemical, and fuel. Protect those margins.</li>
+                    <li style="margin-bottom:0.75rem;">Always upsell. If you're already washing the siding, offer to do the driveway too. Incremental jobs on the same stop are nearly pure profit.</li>
+                    <li style="margin-bottom:0.75rem;">Take before &amp; after photos of every job — these are your best marketing material for social media.</li>
+                    <li style="margin-bottom:0.75rem;"><strong>Surface cleaner attachment:</strong> Invest in a surface cleaner for flat work (driveways, patios). It cuts your time in half and leaves a more professional result.</li>
+                </ul>
+            </div>
+            <div class="glow-card">
+                <h4 style="color:#4ade80;font-size:1rem;font-weight:600;margin-bottom:1rem;">National Average Pricing (USA)</h4>
+                <table class="price-table"><thead><tr><th>Surface</th><th style="text-align:right;">Average Range</th></tr></thead><tbody><tr><td>Driveway (double)</td><td>$100 - $250</td></tr><tr><td>House Exterior (med)</td><td>$175 - $400</td></tr><tr><td>Deck / Patio</td><td>$100 - $300</td></tr><tr><td>Fence (100 lin ft)</td><td>$100 - $200</td></tr><tr><td>Roof Soft Wash</td><td>$250 - $600</td></tr><tr><td>Commercial (1,000 sqft)</td><td>$150 - $350</td></tr></tbody></table>
+                <div style="background:rgba(251,191,36,0.1);border-left:3px solid #fbbf24;padding:1rem;border-radius:4px;margin-top:1rem;"><p style="color:rgba(255,255,255,0.9);font-size:0.875rem;line-height:1.6;margin:0;"><strong style="color:#fbbf24;">⚠️ Disclaimer:</strong> Prices vary by region, surface condition, and access difficulty. Research your local market before setting rates.</p></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Part of the <strong>Pricing Mastery Template Pack</strong> • Created by Tex Mex Junk Removal</p>
+    </div>
+</div><script>
+function switchIndustry(id) {
+    document.querySelectorAll('.industry-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    document.getElementById('tab-' + id).classList.add('active');
+}
+
+function updateMarginDisplay(prefix, revenue, cost) {
+    const profit = revenue - cost;
+    const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
+    document.getElementById(prefix+'-marginPct').textContent = margin.toFixed(1)+'%';
+    document.getElementById(prefix+'-dispRev').textContent = '$'+revenue.toFixed(2);
+    document.getElementById(prefix+'-dispCosts').textContent = '$'+cost.toFixed(2);
+    document.getElementById(prefix+'-dispProfit').textContent = '$'+profit.toFixed(2);
+    document.getElementById(prefix+'-dispTotalCost').textContent = '$'+cost.toFixed(2);
+    document.getElementById(prefix+'-dispQuote').textContent = '$'+revenue.toFixed(2);
+    const bar = document.getElementById(prefix+'-marginBar');
+    const pct = document.getElementById(prefix+'-marginPct');
+    bar.style.width = Math.min(Math.max(margin,0),100)+'%';
+    if (margin >= 50) {
+        bar.style.background = 'linear-gradient(90deg,#4ade80,#22c55e)'; pct.style.color = '#4ade80';
+        document.getElementById(prefix+'-marginStatus').innerHTML = '<div style="background:rgba(74,222,128,0.1);border-left:3px solid #4ade80;padding:1rem;border-radius:4px;"><p style="color:#4ade80;font-weight:600;margin:0;">✓ Excellent! You\'re in the target profit zone.</p></div>';
+    } else if (margin >= 30) {
+        bar.style.background = 'linear-gradient(90deg,#fbbf24,#f59e0b)'; pct.style.color = '#fbbf24';
+        document.getElementById(prefix+'-marginStatus').innerHTML = '<div style="background:rgba(251,191,36,0.1);border-left:3px solid #fbbf24;padding:1rem;border-radius:4px;"><p style="color:#fbbf24;font-weight:600;margin:0;">⚠ Moderate margin. Consider increasing prices to reach 50%+.</p></div>';
+    } else if (margin >= 0) {
+        bar.style.background = 'linear-gradient(90deg,#ef4444,#dc2626)'; pct.style.color = '#ef4444';
+        document.getElementById(prefix+'-marginStatus').innerHTML = '<div style="background:rgba(239,68,68,0.1);border-left:3px solid #ef4444;padding:1rem;border-radius:4px;"><p style="color:#ef4444;font-weight:600;margin:0;">⚠ Low margin! Increase prices immediately.</p></div>';
+    } else {
+        bar.style.background = 'linear-gradient(90deg,#ef4444,#dc2626)'; pct.style.color = '#ef4444';
+        document.getElementById(prefix+'-marginStatus').innerHTML = '<div style="background:rgba(239,68,68,0.15);border-left:3px solid #ef4444;padding:1rem;border-radius:4px;"><p style="color:#ef4444;font-weight:700;margin:0;">🚨 LOSING MONEY! Adjust immediately!</p></div>';
+    }
+    if (cost > 0) {
+        document.getElementById(prefix+'-recLow').textContent  = '$'+Math.ceil(cost/0.80)+' - $'+Math.ceil(cost/0.70);
+        document.getElementById(prefix+'-recMed').textContent  = '$'+Math.ceil(cost/0.69)+' - $'+Math.ceil(cost/0.51);
+        document.getElementById(prefix+'-recHigh').textContent = '$'+Math.ceil(cost/0.50)+' - $'+Math.ceil(cost/0.35);
+    } else {
+        ['recLow','recMed','recHigh'].forEach(k => { document.getElementById(prefix+'-'+k).textContent = 'Enter costs'; });
+    }
+}
+
+function n(id) { return Math.max(0, Number(document.getElementById(id).value)||0); }
+function chk(id) { return document.getElementById(id).checked; }
+
+// JUNK REMOVAL
+function jUpdateJobType() {
+    const t = document.getElementById('j-jobType').value;
+    ['volumeSection','multiSection','specialtySection','mixedSection'].forEach(s => {
+        document.getElementById('j-'+s).style.display = 'none';
+    });
+    const map = {volume:'volumeSection',multipleLoads:'multiSection',specialty:'specialtySection',mixed:'mixedSection'};
+    document.getElementById('j-'+map[t]).style.display = 'block';
+    jCalc();
+}
+function jCalc() {
+    const t = document.getElementById('j-jobType').value;
+    let base = 0;
+    if (t==='volume') { base = n('j-loadPrice'); }
+    else if (t==='multipleLoads') {
+        const nl = n('j-numLoads')||1, ppl = n('j-pricePerLoad'), d = n('j-loadDiscount');
+        const sub = nl*ppl; base = sub - sub*(d/100);
+        document.getElementById('j-dispLoads').textContent = nl+' load'+(nl>1?'s':'');
+        document.getElementById('j-dispPPL').textContent = '$'+ppl.toFixed(0);
+        document.getElementById('j-dispDisc').textContent = d+'%';
+        document.getElementById('j-dispMLTotal').textContent = '$'+base.toFixed(2);
+    } else if (t==='specialty') { base = n('j-specialtyPrice'); }
+    else if (t==='mixed') { base = n('j-mixedSpecPrice')+n('j-mixedLoadPrice'); }
+    let quote = base;
+    if (chk('j-applyStairs')) quote += n('j-stairsCharge');
+    if (chk('j-applyDis'))    quote += n('j-disCharge');
+    if (chk('j-applyHeavy'))  quote += n('j-heavyCharge');
+    if (chk('j-applyDemo'))   quote += n('j-demoCharge');
+    const cost = n('j-costLandfill')+n('j-costDumpster')+n('j-costDemoMachine')+n('j-costTruck')+n('j-costFuel')+n('j-costLabor');
+    updateMarginDisplay('j', quote, cost);
+}
+function jBtnFlash() {
+    const b=document.getElementById('j-calcBtn'); b.textContent='✓ Updated!'; b.style.background='#22c55e';
+    setTimeout(()=>{b.textContent='🔄 Update Profit Calculation';b.style.background='linear-gradient(135deg,#4ade80,#22c55e)';},1500);
+}
+function jClear() {
+    ['j-loadPrice','j-numLoads','j-pricePerLoad','j-loadDiscount','j-specialtyPrice','j-mixedSpecPrice','j-mixedLoadPrice',
+     'j-stairsCharge','j-disCharge','j-heavyCharge','j-demoCharge',
+     'j-costLandfill','j-costDumpster','j-costDemoMachine','j-costTruck','j-costFuel','j-costLabor'].forEach(id=>{
+        const el=document.getElementById(id); if(el) el.value=(id==='j-numLoads'?'1':'0');
+    });
+    ['j-applyStairs','j-applyDis','j-applyHeavy','j-applyDemo'].forEach(id=>{document.getElementById(id).checked=false;});
+    document.getElementById('j-jobType').value='volume'; jUpdateJobType();
+    const b=document.getElementById('j-clearBtn'); b.textContent='✓ Cleared!';b.style.background='rgba(74,222,128,0.2)';b.style.borderColor='#4ade80';b.style.color='#4ade80';
+    setTimeout(()=>{b.textContent='🗑️ Clear All Inputs';b.style.background='rgba(239,68,68,0.2)';b.style.borderColor='#ef4444';b.style.color='#ef4444';},1500);
+}
+
+// LAWN CARE
+function lUpdateService() {
+    const s=document.getElementById('l-serviceType').value;
+    ['mow','cleanup','mulch','trim','leaf','aerate'].forEach(k=>{
+        document.getElementById('l-'+k+'Section').style.display=(s===k)?'block':'none';
+    });
+    lCalc();
+}
+function lGetBase() {
+    const s=document.getElementById('l-serviceType').value;
+    const m={mow:'l-mowPrice',cleanup:'l-cleanupPrice',mulch:'l-mulchPrice',trim:'l-trimPrice',leaf:'l-leafPrice',aerate:'l-aeratePrice'};
+    return n(m[s]);
+}
+function lCalc() {
+    let quote=lGetBase();
+    if(chk('l-applyOvergrown')) quote+=n('l-overgrownCharge');
+    if(chk('l-applyHaul'))      quote+=n('l-haulCharge');
+    if(chk('l-applySlope'))     quote+=n('l-slopeCharge');
+    if(chk('l-applyTravel'))    quote+=n('l-travelCharge');
+    const cost=n('l-costFuel')+n('l-costLabor')+n('l-costMaterial')+n('l-costEquip')+n('l-costDump');
+    updateMarginDisplay('l',quote,cost);
+}
+function lBtnFlash() {
+    const b=document.getElementById('l-calcBtn'); b.textContent='✓ Updated!'; b.style.background='#22c55e';
+    setTimeout(()=>{b.textContent='🔄 Update Profit Calculation';b.style.background='linear-gradient(135deg,#4ade80,#22c55e)';},1500);
+}
+function lClear() {
+    ['l-mowPrice','l-cleanupPrice','l-mulchPrice','l-trimPrice','l-leafPrice','l-aeratePrice',
+     'l-overgrownCharge','l-haulCharge','l-slopeCharge','l-travelCharge',
+     'l-costFuel','l-costLabor','l-costMaterial','l-costEquip','l-costDump'].forEach(id=>{
+        const el=document.getElementById(id); if(el) el.value='0';
+    });
+    ['l-applyOvergrown','l-applyHaul','l-applySlope','l-applyTravel'].forEach(id=>{document.getElementById(id).checked=false;});
+    document.getElementById('l-serviceType').value='mow'; lUpdateService();
+    const b=document.getElementById('l-clearBtn'); b.textContent='✓ Cleared!';b.style.background='rgba(74,222,128,0.2)';b.style.borderColor='#4ade80';b.style.color='#4ade80';
+    setTimeout(()=>{b.textContent='🗑️ Clear All Inputs';b.style.background='rgba(239,68,68,0.2)';b.style.borderColor='#ef4444';b.style.color='#ef4444';},1500);
+}
+
+// PRESSURE WASHING
+function pUpdateSurface() {
+    const s=document.getElementById('p-surfaceType').value;
+    ['driveway','house','deck','fence','roof','commercial'].forEach(k=>{
+        document.getElementById('p-'+k+'Section').style.display=(s===k)?'block':'none';
+    });
+    pCalc();
+}
+function pGetBase() {
+    const s=document.getElementById('p-surfaceType').value;
+    const m={driveway:'p-drivewayPrice',house:'p-housePrice',deck:'p-deckPrice',fence:'p-fencePrice',roof:'p-roofPrice',commercial:'p-commPrice'};
+    return n(m[s]);
+}
+function pCalc() {
+    let quote=pGetBase();
+    if(chk('p-applyMold'))   quote+=n('p-moldCharge');
+    if(chk('p-applyMulti'))  quote+=n('p-multiCharge');
+    if(chk('p-applyTravel')) quote+=n('p-travelCharge');
+    const cost=n('p-costChemical')+n('p-costFuel')+n('p-costLabor')+n('p-costEquip')+n('p-costWater');
+    updateMarginDisplay('p',quote,cost);
+}
+function pBtnFlash() {
+    const b=document.getElementById('p-calcBtn'); b.textContent='✓ Updated!'; b.style.background='#22c55e';
+    setTimeout(()=>{b.textContent='🔄 Update Profit Calculation';b.style.background='linear-gradient(135deg,#4ade80,#22c55e)';},1500);
+}
+function pClear() {
+    ['p-drivewayPrice','p-housePrice','p-deckPrice','p-fencePrice','p-roofPrice','p-commPrice',
+     'p-moldCharge','p-multiCharge','p-travelCharge',
+     'p-costChemical','p-costFuel','p-costLabor','p-costEquip','p-costWater'].forEach(id=>{
+        const el=document.getElementById(id); if(el) el.value='0';
+    });
+    ['p-applyMold','p-applyMulti','p-applyTravel'].forEach(id=>{document.getElementById(id).checked=false;});
+    document.getElementById('p-surfaceType').value='driveway'; pUpdateSurface();
+    const b=document.getElementById('p-clearBtn'); b.textContent='✓ Cleared!';b.style.background='rgba(74,222,128,0.2)';b.style.borderColor='#4ade80';b.style.color='#4ade80';
+    setTimeout(()=>{b.textContent='🗑️ Clear All Inputs';b.style.background='rgba(239,68,68,0.2)';b.style.borderColor='#ef4444';b.style.color='#ef4444';},1500);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    jUpdateJobType();
+    lUpdateService();
+    pUpdateSurface();
+});
+</script>
+</body>
+</html>
